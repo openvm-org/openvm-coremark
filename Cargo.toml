@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-openvm = { git = "https://github.com/openvm-org/openvm.git", tag = "v1.4.1", features = ["std"] }
+openvm = { git = "https://github.com/openvm-org/openvm.git", tag = "v1.4.3", features = ["std"] }
