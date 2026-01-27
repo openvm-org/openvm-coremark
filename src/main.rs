@@ -10,7 +10,7 @@ use openvm::io::reveal_u32;
 
 // Configuration
 const TOTAL_DATA_SIZE: usize = 2000;
-const ITERATIONS: u32 = 100;
+const ITERATIONS: u32 = 1000;
 
 // Type aliases matching CoreMark types
 type EeU8 = u8;
