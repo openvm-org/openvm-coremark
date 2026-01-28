@@ -1,17 +1,65 @@
 /*
  * Minimal CoreMark port for this workspace.
  *
- * This is currently just enough to compile/link CoreMark; it does not provide
- * real time measurement or output. We'll replace stubs with OpenVM-specific
- * implementations later.
+ * This is currently just enough to compile/link CoreMark and print through
+ * OpenVM; it does not provide an in-guest tick source.
+ *
+ * Timing policy for this repo:
+ * - We measure elapsed time using **host wall-clock** around the guest run.
+ * - The CoreMark-required timing hooks below are therefore stubs and are NOT
+ *   used to produce valid "CoreMark/MHz" style results inside the guest.
  */
 
 #include "core_portme.h"
-#include "../coremark/coremark.h"
+#include "coremark.h"
 
 #include <stdarg.h>
 
-/* Implemented in Rust; routes output through OpenVM. */
+/* Seed values (used when SEED_METHOD == SEED_VOLATILE) */
+volatile ee_s32 seed1_volatile = 0x0;
+volatile ee_s32 seed2_volatile = 0x0;
+volatile ee_s32 seed3_volatile = 0x66;
+volatile ee_s32 seed4_volatile = ITERATIONS;
+volatile ee_s32 seed5_volatile = 0;
+
+ee_u32 default_num_contexts = 1;
+
+void portable_init(core_portable *p, int *argc, char *argv[]) {
+  (void)argc;
+  (void)argv;
+  p->portable_id = 1;
+}
+
+void portable_fini(core_portable *p) { p->portable_id = 0; }
+
+/*
+ * CoreMark timing hooks
+ *
+ * OpenVM guest programs do not currently expose a meaningful wall-clock / cycle
+ * counter to the guest. We therefore measure timing outside the guest (host
+ * wall-clock) and keep these functions as minimal stubs so the benchmark can
+ * run and print.
+ */
+static CORE_TICKS start_ticks = 0;
+static CORE_TICKS stop_ticks = 0;
+
+void start_time(void) { start_ticks = 0; }
+void stop_time(void) { stop_ticks = 1; }
+CORE_TICKS get_time(void) { return (CORE_TICKS)(stop_ticks - start_ticks); }
+
+secs_ret time_in_secs(CORE_TICKS ticks) {
+  /* Stub: no in-guest time source; return "ticks" as seconds */
+  return (secs_ret)ticks;
+}
+
+/*
+ * CoreMark ee_printf implementation
+ *
+ * We route print output through OpenVM, which implements a guest print utility.
+ * The formatter here is intentionally minimal: it only supports the subset of
+ * format specifiers CoreMark uses (e.g. %s, %d/%i, %u, %x/%X, %c, %% and simple
+ * width/zero-padding like %04x and %lu).
+ */
 extern void coremark_putchar(unsigned char c);
 
 static void ee_putc(char c) { coremark_putchar((unsigned char)c); }
@@ -52,36 +100,6 @@ static void ee_put_int(long v, int width, int zero_pad) {
     ee_put_uint((unsigned long)v, 10, 0, width, zero_pad);
   }
 }
-
-/* Seed values (used when SEED_METHOD == SEED_VOLATILE) */
-volatile ee_s32 seed1_volatile = 0x0;
-volatile ee_s32 seed2_volatile = 0x0;
-volatile ee_s32 seed3_volatile = 0x66;
-volatile ee_s32 seed4_volatile = ITERATIONS;
-volatile ee_s32 seed5_volatile = 0;
-
-ee_u32 default_num_contexts = 1;
-
-/* Very small "timer" stub */
-static CORE_TICKS start_ticks = 0;
-static CORE_TICKS stop_ticks = 0;
-
-void start_time(void) { start_ticks = 0; }
-void stop_time(void) { stop_ticks = 1; }
-CORE_TICKS get_time(void) { return (CORE_TICKS)(stop_ticks - start_ticks); }
-
-secs_ret time_in_secs(CORE_TICKS ticks) {
-  /* No real time source yet; just return ticks. */
-  return (secs_ret)ticks;
-}
-
-void portable_init(core_portable *p, int *argc, char *argv[]) {
-  (void)argc;
-  (void)argv;
-  p->portable_id = 1;
-}
-
-void portable_fini(core_portable *p) { p->portable_id = 0; }
 
 int ee_printf(const char *fmt, ...) {
   va_list args;

@@ -2,7 +2,12 @@
  * Minimal CoreMark port for this workspace.
  *
  * For now this is intentionally "stubby": it exists so the CoreMark sources
- * compile and link, even before we wire up real timing / I/O on OpenVM.
+ * compile and link.
+ *
+ * Timing policy for this repo:
+ * - We measure elapsed time using **host wall-clock** around the guest run.
+ * - The CoreMark-required timing hooks below are therefore stubs and are NOT
+ *   used to produce valid "CoreMark/MHz" style results inside the guest.
  */
 #ifndef CORE_PORTME_H
 #define CORE_PORTME_H
