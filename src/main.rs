@@ -1,9 +1,20 @@
 use std::{
     ffi::{c_char, CString},
     ptr::null_mut,
+    str::from_utf8,
 };
 
 openvm::entry!(main);
+
+#[no_mangle]
+pub extern "C" fn coremark_putchar(c: u8) {
+    let b = [c];
+    if let Ok(s) = from_utf8(&b) {
+        openvm::io::print(s);
+    } else {
+        openvm::io::print("?");
+    }
+}
 
 extern "C" {
     fn coremark_main(argc: i32, argv: *mut *mut c_char) -> i32;
