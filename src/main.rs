@@ -1,12 +1,21 @@
-use openvm::io::reveal_u32;
+use std::{
+    ffi::{c_char, CString},
+    ptr::null_mut,
+};
+
+openvm::entry!(main);
 
 extern "C" {
-    fn add_u32(a: u32, b: u32) -> u32;
+    fn coremark_main(argc: i32, argv: *mut *mut c_char) -> i32;
 }
 
-fn main() {
-    let a = 8u32;
-    let b = 3u32;
-    let res = unsafe { add_u32(a, b) };
-    reveal_u32(res, 0);
+fn main() -> Result<(), i32> {
+    let arg0 = CString::new("coremark").unwrap();
+    let mut argv: Vec<*mut c_char> = vec![arg0.as_ptr() as *mut c_char, null_mut()];
+    let rc = unsafe { coremark_main(1, argv.as_mut_ptr()) };
+    if rc == 0 {
+        Ok(())
+    } else {
+        Err(rc)
+    }
 }

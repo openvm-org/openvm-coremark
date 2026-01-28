@@ -4,13 +4,33 @@ use std::{
 };
 
 fn main() {
-    // Re-run the build script if the C source changes.
-    println!("cargo:rerun-if-changed=c/add_u32.c");
+    // Re-run the build script if any CoreMark/porting sources change.
+    println!("cargo:rerun-if-changed=coremark/core_list_join.c");
+    println!("cargo:rerun-if-changed=coremark/core_main.c");
+    println!("cargo:rerun-if-changed=coremark/core_matrix.c");
+    println!("cargo:rerun-if-changed=coremark/core_state.c");
+    println!("cargo:rerun-if-changed=coremark/core_util.c");
+    println!("cargo:rerun-if-changed=coremark/coremark.h");
+    println!("cargo:rerun-if-changed=portme/core_portme.c");
+    println!("cargo:rerun-if-changed=portme/core_portme.h");
 
     let target = var("TARGET").unwrap_or_default();
 
     let mut build = cc::Build::new();
-    build.file("portme/add_u32.c").flag_if_supported("-std=c11");
+    // Build CoreMark as a C static library. We rename C `main` so it can be linked into
+    // this Rust crate without conflicting with Rust's `main`.
+    build
+        .include("coremark")
+        .include("portme")
+        .file("coremark/core_list_join.c")
+        .file("coremark/core_main.c")
+        .file("coremark/core_matrix.c")
+        .file("coremark/core_state.c")
+        .file("coremark/core_util.c")
+        .file("portme/core_portme.c")
+        .define("main", Some("coremark_main"))
+        .define("FLAGS_STR", Some("\"(set by build.rs)\""))
+        .flag_if_supported("-std=c11");
 
     // When building the OpenVM guest target, cc-rs will add `-march=rv32im -mabi=ilp32`, but
     // the default host compiler may treat those as x86 flags unless we set a RISC-V target.
@@ -53,5 +73,5 @@ fn main() {
         }
     }
 
-    build.compile("add_u32");
+    build.compile("coremark");
 }
