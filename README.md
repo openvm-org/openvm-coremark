@@ -22,8 +22,6 @@ This repo’s `portme` has two notable features:
 - **Printing is implemented via OpenVM**: `ee_printf` is implemented in C, but it routes each emitted byte through a small Rust-exported symbol (`coremark_putchar`) which calls `openvm::io::print`. The formatter is intentionally minimal and only supports the subset CoreMark uses (e.g. `%s`, `%d/%i`, `%u`, `%x/%X`, `%c`, `%%`, simple width/zero-padding like `%04x`, and `%lu`).
 - **Timing is NOT implemented in-guest**: OpenVM guest programs don’t currently expose a meaningful wall-clock/cycle counter to the guest. We measure elapsed time using **host wall-clock** around `cargo openvm run`, and keep the CoreMark timing hooks as minimal stubs so the benchmark can run and print.
 
-> **Note**
->
 > Because the timing hooks are stubbed, CoreMark will typically print:
 > `ERROR! Must execute for at least 10 secs for a valid result!`
 >
