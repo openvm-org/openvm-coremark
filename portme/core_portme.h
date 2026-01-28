@@ -33,7 +33,7 @@
 #endif
 
 #ifndef ITERATIONS
-#define ITERATIONS 0
+#define ITERATIONS 10000
 #endif
 
 /* Report strings */
@@ -99,7 +99,7 @@ typedef ee_u32 CORE_TICKS;
 extern ee_u32 default_num_contexts;
 
 typedef struct CORE_PORTABLE_S {
-  ee_u8 portable_id;
+    ee_u8 portable_id;
 } core_portable;
 
 void portable_init(core_portable *p, int *argc, char *argv[]);
