@@ -33,7 +33,7 @@
 #endif
 
 #ifndef ITERATIONS
-#define ITERATIONS 10000
+#define ITERATIONS 100000
 #endif
 
 /* Report strings */
