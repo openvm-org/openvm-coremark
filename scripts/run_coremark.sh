@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Usage: ./run_coremark.sh [OPTIONS]
+# Usage: ./scripts/run_coremark.sh [OPTIONS]
 #
 # Options:
 #   --mode <MODE>       Set the mode (default: prove-stark)
@@ -12,17 +12,17 @@
 #   --<tool>            Run with compute-sanitizer --tool <tool> (memcheck, synccheck, racecheck)
 #
 # Examples:
-#   ./run_coremark.sh                          # Prove coremark with STARK
-#   ./run_coremark.sh --mode execute           # Execute only (no proof)
-#   ./run_coremark.sh --cuda                   # Force CUDA acceleration
-#   ./run_coremark.sh --nsys                   # Run with nsys profiling
+#   ./scripts/run_coremark.sh                          # Prove coremark with STARK
+#   ./scripts/run_coremark.sh --mode execute           # Execute only (no proof)
+#   ./scripts/run_coremark.sh --cuda                   # Force CUDA acceleration
+#   ./scripts/run_coremark.sh --nsys                   # Run with nsys profiling
 #
 set -e
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 WORKDIR=$REPO_ROOT
 
-ELF="bin/coremark-benchmark/elf/coremark-openvm"
+ELF="host/elf/coremark-openvm"
 if [ ! -f "$ELF" ]; then
     echo "Error: coremark ELF not found at $ELF" >&2
     echo "Copy it manually: cp <path-to-coremark-elf> $ELF" >&2
@@ -55,18 +55,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --profile)
             PROFILE_OVERRIDE="$2"
-            shift 2
-            ;;
-        --leaf-log-blowup)
-            LEAF_LOG_BLOWUP="$2"
-            shift 2
-            ;;
-        --internal-log-blowup)
-            INTERNAL_LOG_BLOWUP="$2"
-            shift 2
-            ;;
-        --app-l-skip)
-            APP_L_SKIP="$2"
             shift 2
             ;;
         --cuda)
@@ -170,7 +158,7 @@ if [ "$USE_NSYS" = "false" ]; then
     export JEMALLOC_SYS_WITH_MALLOC_CONF="retain:true,background_thread:true,metadata_thp:always,dirty_decay_ms:10000,muzzy_decay_ms:10000,abort_conf:true"
 fi
 
-MANIFEST_PATH="$REPO_ROOT/bin/coremark-benchmark/Cargo.toml"
+MANIFEST_PATH="$REPO_ROOT/host/Cargo.toml"
 
 if [[ "${OPENVM_BENCH_SKIP_BUILD:-0}" != "1" ]]; then
     RUSTFLAGS=$RUSTFLAGS cargo $TOOLCHAIN build --manifest-path "$MANIFEST_PATH" --target-dir "$REPO_ROOT/target" --bin $BIN_NAME --profile=$PROFILE --no-default-features --features=$FEATURES
@@ -178,21 +166,9 @@ fi
 
 BIN=$REPO_ROOT/target/$TARGET_DIR/$BIN_NAME
 
-CONFIG_ARGS=""
-if [[ -n $LEAF_LOG_BLOWUP ]]; then
-    CONFIG_ARGS="$CONFIG_ARGS --leaf-log-blowup ${LEAF_LOG_BLOWUP}"
-fi
-if [[ -n $INTERNAL_LOG_BLOWUP ]]; then
-    CONFIG_ARGS="$CONFIG_ARGS --internal-log-blowup ${INTERNAL_LOG_BLOWUP}"
-fi
-if [[ -n $APP_L_SKIP ]]; then
-    CONFIG_ARGS="$CONFIG_ARGS --app-l-skip ${APP_L_SKIP}"
-fi
-
 BIN_ARGS="--mode $MODE \
 --max-segment-length $MAX_SEGMENT_LENGTH \
---segment-max-memory $segment_max_memory \
-$CONFIG_ARGS"
+--segment-max-memory $segment_max_memory"
 
 export RUST_LOG="info,p3_=warn"
 

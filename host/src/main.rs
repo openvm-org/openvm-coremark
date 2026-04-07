@@ -4,20 +4,11 @@ use std::time::Instant;
 
 use clap::Parser;
 use openvm_circuit::arch::instructions::exe::VmExe;
-use openvm_sdk::{
-    config::{
-        AggregationSystemParams, AppConfig, DEFAULT_APP_LOG_BLOWUP, DEFAULT_APP_L_SKIP,
-        DEFAULT_INTERNAL_LOG_BLOWUP, DEFAULT_LEAF_LOG_BLOWUP,
-    },
-    Sdk,
-};
+use openvm_sdk::{config::{AggregationSystemParams, AppConfig}, Sdk};
 use openvm_sdk_config::{SdkVmConfig, TranspilerConfig};
 use openvm_stark_sdk::{
     bench::run_with_metric_collection,
-    config::{
-        app_params_with_100_bits_security,
-        baby_bear_poseidon2::D_EF,
-    },
+    config::app_params_with_100_bits_security,
     openvm_stark_backend::codec::Encode,
 };
 use openvm_transpiler::{elf::Elf, openvm_platform::memory::MEM_SIZE, FromElf};
@@ -44,18 +35,6 @@ pub enum BenchMode {
 struct Args {
     #[clap(long, value_enum, default_value = "prove-stark")]
     mode: BenchMode,
-
-    #[arg(long, default_value_t = DEFAULT_APP_LOG_BLOWUP)]
-    app_log_blowup: usize,
-
-    #[arg(long, default_value_t = DEFAULT_APP_L_SKIP)]
-    app_l_skip: usize,
-
-    #[arg(long, default_value_t = DEFAULT_LEAF_LOG_BLOWUP)]
-    leaf_log_blowup: usize,
-
-    #[arg(long, default_value_t = DEFAULT_INTERNAL_LOG_BLOWUP)]
-    internal_log_blowup: usize,
 
     #[arg(long, alias = "max_segment_length")]
     max_segment_length: Option<u32>,
@@ -91,10 +70,6 @@ fn main() -> eyre::Result<()> {
             .limits
             .set_max_memory(max_memory);
     }
-
-    vm_config.as_mut().segmentation_config.main_cell_weight = 1 + (1 << args.app_log_blowup);
-    vm_config.as_mut().segmentation_config.main_cell_secondary_weight =
-        (D_EF * 2) as f64 / (1 << args.app_l_skip) as f64;
 
     let transpiler = vm_config.transpiler().clone();
     let app_params = app_params_with_100_bits_security(DEFAULT_LOG_STACKED_HEIGHT);
