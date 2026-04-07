@@ -7,7 +7,9 @@ Run the [CoreMark](coremark/README.md) benchmark as an OpenVM guest program.
 - `coremark/`: CoreMark sources (submodule snapshot)
 - `portme/`: CoreMark “porting layer” (`core_portme.{c,h}`) for OpenVM
 - `src/main.rs`: OpenVM guest entrypoint that calls into CoreMark
+- `host/`: host-side benchmark/prover harness for running and verifying the guest ELF
 - `build.rs`: Builds CoreMark C sources into a static library for the Rust crate
+- `scripts/run_coremark.sh`: convenience wrapper for the host benchmark harness
 - `openvm.toml`: OpenVM app configuration (RV32IM + IO enabled)
 
 ## Porting layer (`portme/`)
@@ -34,6 +36,14 @@ This repo’s `portme` has two notable features:
 - Uses `openvm::entry!(main)` to define the guest entrypoint.
 - Exposes `coremark_putchar(u8)` for the C `ee_printf` implementation.
 - Calls the C function `coremark_main(argc, argv)` (CoreMark’s C `main` renamed at build time) and returns `Ok(())` iff the return code is `0`.
+
+## Host harness (`host/`)
+
+The standalone host-side benchmark/proving binary lives under `host/`, separate from the guest crate at the repo root. Run it via:
+
+```bash
+./scripts/run_coremark.sh
+```
 
 ## Building/running with `cargo openvm`
 
@@ -62,4 +72,3 @@ CoreMark iterations are controlled via the C macro `ITERATIONS` (default `0` = a
 ```bash
 CFLAGS="-DITERATIONS=1000" cargo openvm run
 ```
-

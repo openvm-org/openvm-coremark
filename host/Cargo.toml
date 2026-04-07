@@ -1,0 +1,32 @@
+[package]
+name = "openvm-coremark-benchmark"
+version = "0.4.0"
+edition = "2024"
+
+[dependencies]
+tracing-subscriber = "0.3"
+tracing = { version = "0.1", default-features = false }
+clap = { version = "4.5.7", features = ["derive"] }
+eyre = "0.6"
+zstd = { version = "0.13", default-features = false }
+
+openvm-stark-sdk = { git = "https://github.com/openvm-org/stark-backend.git", branch = "develop-v2", default-features = false }
+openvm-cuda-backend = { git = "https://github.com/openvm-org/stark-backend.git", branch = "develop-v2", default-features = false, optional = true }
+openvm-transpiler = { git = "https://github.com/openvm-org/openvm.git", branch = "develop-v2.0.0-rc.1", default-features = false }
+openvm-circuit = { git = "https://github.com/openvm-org/openvm.git", branch = "develop-v2.0.0-rc.1", default-features = false }
+openvm-verify-stark-host = { git = "https://github.com/openvm-org/openvm.git", branch = "develop-v2.0.0-rc.1", default-features = false }
+openvm-sdk = { git = "https://github.com/openvm-org/openvm.git", branch = "develop-v2.0.0-rc.1", default-features = false }
+openvm-sdk-config = { git = "https://github.com/openvm-org/openvm.git", branch = "develop-v2.0.0-rc.1", default-features = false }
+
+[features]
+default = ["parallel", "jemalloc", "metrics"]
+parallel = ["openvm-sdk/parallel"]
+metrics = ["openvm-sdk/metrics"]
+tco = ["openvm-sdk/tco"]
+aot = ["openvm-sdk/aot"]
+perf-metrics = ["openvm-sdk/perf-metrics"]
+mimalloc = ["openvm-sdk/mimalloc"]
+jemalloc = ["openvm-sdk/jemalloc"]
+cuda = ["dep:openvm-cuda-backend", "openvm-sdk/cuda"]
+unprotected = ["openvm-sdk/unprotected"]
+nvtx = ["openvm-stark-sdk/nvtx"]
