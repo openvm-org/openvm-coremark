@@ -1,16 +1,125 @@
 # coremark-openvm
 
-Run the [CoreMark](coremark/README.md) benchmark as an OpenVM guest program.
+The [CoreMark](coremark/README.md) benchmark as an OpenVM guest program.
+The repo root is the guest crate, and `host/` contains a separate host-side harness.
+
+## Getting Started
+
+### Prerequisites
+
+#### Required:
+- `git`
+- `rustup` with the repo toolchain from `rust-toolchain.toml`
+- `cargo openvm` (install via the [official OpenVM docs](https://docs.openvm.dev/book/getting-started/introduction))
+- A RISC-V GCC toolchain in `PATH` for guest builds
+
+#### Optional:
+- NVIDIA tooling for CUDA/profiling flows: `nvidia-smi`, `compute-sanitizer`, and `nsys`
+
+If you want to use a specific RISC-V GCC for guest builds, set `OPENVM_GUEST_GCC`.
+Otherwise `build.rs` tries common toolchain names in `PATH`:
+`riscv32-unknown-elf-gcc`, `riscv64-unknown-elf-gcc`,
+`riscv32-linux-gnu-gcc`, `riscv64-linux-gnu-gcc`, `riscv-none-elf-gcc`, and
+`riscv64-unknown-linux-gnu-gcc`.
+
+### Clone The Repo
+
+```bash
+git clone --recurse-submodules <repo-url>
+cd coremark-openvm
+```
+
+If you already cloned without submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+### Running/Proving Using `cargo openvm`
+
+To run the CoreMark guest program using OpenVM:
+
+```bash
+cargo openvm run
+```
+
+To generate an app proof of the CoreMark execution:
+
+```bash
+cargo openvm keygen --app-only
+cargo openvm prove app
+```
+
+To generate an aggregated STARK proof of the CoreMark execution:
+
+```bash
+cargo openvm setup
+cargo openvm keygen
+cargo openvm prove stark
+```
+
+To use a fixed iteration count instead of the default build-time setting:
+
+```bash
+CFLAGS="-DITERATIONS=1000" cargo openvm run
+CFLAGS="-DITERATIONS=1000" cargo openvm prove app
+CFLAGS="-DITERATIONS=1000" cargo openvm prove stark
+```
+
+For more information on `cargo openvm` usage, see the [official OpenVM docs](https://docs.openvm.dev/book/getting-started/introduction).
+
+### Running/Proving Using the Host Harness
+
+The host harness currently expects a guest ELF at `host/elf/coremark-openvm`.
+After building the guest with `cargo openvm build`, copy the resulting ELF there:
+
+```bash
+mkdir -p host/elf
+cp target/riscv32im-risc0-zkvm-elf/<profile>/coremark-openvm host/elf/coremark-openvm
+```
+
+Then run the host wrapper:
+
+```bash
+./host/scripts/run_coremark.sh
+```
+
+### Benchmarking
+
+For the `cargo openvm` flow, measure elapsed execution/proving time outside the guest
+with a shell timing utility such as:
+
+```bash
+time cargo openvm run
+```
+
+The in-guest CoreMark timing hooks are stubbed, so the benchmark's printed
+timing-derived fields are not meaningful in this repo's current setup.
+
+For the host-harness flow, `./host/scripts/run_coremark.sh` writes `metrics.json`
+in the normal non-`--nsys` path. You can use [`openvm-prof`](https://github.com/openvm-org/openvm/tree/main/crates/prof)
+on that `metrics.json` output for profiling and benchmark analysis.
 
 ## Repo structure
 
-- `coremark/`: CoreMark sources (submodule snapshot)
-- `portme/`: CoreMark “porting layer” (`core_portme.{c,h}`) for OpenVM
-- `src/main.rs`: OpenVM guest entrypoint that calls into CoreMark
-- `host/`: host-side benchmark/prover harness for running and verifying the guest ELF
-- `build.rs`: Builds CoreMark C sources into a static library for the Rust crate
-- `scripts/run_coremark.sh`: convenience wrapper for the host benchmark harness
-- `openvm.toml`: OpenVM app configuration (RV32IM + IO enabled)
+```text
+coremark-openvm/
+├── Cargo.toml                 # Guest crate manifest
+├── build.rs                   # Builds CoreMark C sources into the guest crate
+├── openvm.toml                # Guest VM configuration
+├── src/
+│   └── main.rs                # OpenVM guest entrypoint
+├── portme/
+│   ├── core_portme.c          # CoreMark porting layer implementation for OpenVM
+│   └── core_portme.h          # CoreMark porting layer definitions
+├── coremark/                  # CoreMark sources (git submodule)
+└── host/
+    ├── Cargo.toml             # Host crate manifest
+    ├── src/
+    │   └── main.rs            # Host benchmark/prover entrypoint
+    └── scripts/
+        └── run_coremark.sh    # Wrapper to build and run the host harness
+```
 
 ## Porting layer (`portme/`)
 
@@ -39,36 +148,37 @@ This repo’s `portme` has two notable features:
 
 ## Host harness (`host/`)
 
-The standalone host-side benchmark/proving binary lives under `host/`, separate from the guest crate at the repo root. Run it via:
+The standalone host-side benchmark/proving binary lives under `host/`, separate from the guest crate at the repo root. The recommended entrypoint is:
 
 ```bash
-./scripts/run_coremark.sh
+./host/scripts/run_coremark.sh
 ```
 
-## Building/running with `cargo openvm`
+The wrapper script builds the host binary from `host/`, runs it against the
+guest ELF staged at `host/elf/coremark-openvm`, and enables some host-specific
+features automatically based on the machine it is running on.
 
-### Install `cargo openvm`
+By default, it runs in `prove-stark` mode with the `release` Cargo profile.
+On `x86_64`, it also enables the host `aot` feature. If `nvidia-smi` is
+available, the script automatically enables CUDA and records GPU memory usage to
+`gpu_memory_usage.csv`. If no NVIDIA tooling is available, the host harness
+still runs without those profiling features.
 
-See [the official OpenVM docs](https://docs.openvm.dev/book/getting-started/introduction) for installation instructions.
+### `run_coremark.sh` options
 
-### Commands
+- `--mode <MODE>`: choose one of `execute`, `execute-metered`, `prove-app`, or `prove-stark`
+- `--profile <PROFILE>`: build the host binary with `dev`, `release`, or a custom Cargo profile such as `profiling`
+- `--cuda`: force CUDA acceleration instead of relying on auto-detection via `nvidia-smi`
+- `--nsys`: run under NVIDIA Nsight Systems profiling; this implies CUDA and uses `sudo nsys profile`
+- `--memcheck`: run under `compute-sanitizer --tool memcheck`
+- `--synccheck`: run under `compute-sanitizer --tool synccheck`
+- `--racecheck`: run under `compute-sanitizer --tool racecheck`
 
-- Build the guest:
+If you only want the standard host benchmark/prover flow, `./host/scripts/run_coremark.sh`
+is enough. The CUDA, `compute-sanitizer`, and `nsys` paths are optional and only
+needed for GPU acceleration or profiling/debugging work.
 
-```bash
-cargo openvm build
-```
+## Acknowledgements
 
-- Run the guest:
-
-```bash
-cargo openvm run
-```
-
-### Setting a fixed iteration count
-
-CoreMark iterations are controlled via the C macro `ITERATIONS` (default `0` = auto-calibrate). You can override it by passing a C define during the build, e.g.:
-
-```bash
-CFLAGS="-DITERATIONS=1000" cargo openvm run
-```
+- The zkVM framework uses [OpenVM](https://github.com/openvm-org/openvm)
+- The benchmark workload directly uses [CoreMark](https://github.com/eembc/coremark)

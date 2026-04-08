@@ -5,7 +5,7 @@
 # Source this file to use the functions.
 #
 # Usage:
-#   source gpu_monitor.sh
+#   source host/scripts/gpu_monitor.sh
 #   start_gpu_monitor [log_file] [interval]
 #   # ... run your workload ...
 #   finalize_gpu_monitor

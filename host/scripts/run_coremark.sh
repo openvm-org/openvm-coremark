@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Usage: ./scripts/run_coremark.sh [OPTIONS]
+# Usage: ./host/scripts/run_coremark.sh [OPTIONS]
 #
 # Options:
 #   --mode <MODE>       Set the mode (default: prove-stark)
@@ -12,17 +12,19 @@
 #   --<tool>            Run with compute-sanitizer --tool <tool> (memcheck, synccheck, racecheck)
 #
 # Examples:
-#   ./scripts/run_coremark.sh                          # Prove coremark with STARK
-#   ./scripts/run_coremark.sh --mode execute           # Execute only (no proof)
-#   ./scripts/run_coremark.sh --cuda                   # Force CUDA acceleration
-#   ./scripts/run_coremark.sh --nsys                   # Run with nsys profiling
+#   ./host/scripts/run_coremark.sh                          # Prove coremark with STARK
+#   ./host/scripts/run_coremark.sh --mode execute           # Execute only (no proof)
+#   ./host/scripts/run_coremark.sh --cuda                   # Force CUDA acceleration
+#   ./host/scripts/run_coremark.sh --nsys                   # Run with nsys profiling
 #
 set -e
 
-REPO_ROOT=$(git rev-parse --show-toplevel)
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+HOST_DIR=$(cd -- "$SCRIPT_DIR/.." && pwd)
+REPO_ROOT=$(cd -- "$HOST_DIR/.." && pwd)
 WORKDIR=$REPO_ROOT
 
-ELF="host/elf/coremark-openvm"
+ELF="$HOST_DIR/elf/coremark-openvm"
 if [ ! -f "$ELF" ]; then
     echo "Error: coremark ELF not found at $ELF" >&2
     echo "Copy it manually: cp <path-to-coremark-elf> $ELF" >&2
@@ -30,7 +32,7 @@ if [ ! -f "$ELF" ]; then
 fi
 
 # =============== GPU memory usage monitoring ============================
-source "$REPO_ROOT/scripts/gpu_monitor.sh"
+source "$SCRIPT_DIR/gpu_monitor.sh"
 GPU_LOG_FILE="$WORKDIR/gpu_memory_usage.csv"
 trap finalize_gpu_monitor EXIT
 
@@ -123,7 +125,6 @@ case "${PROFILE_OVERRIDE:-release}" in
 esac
 
 FEATURES="parallel,metrics,jemalloc,unprotected"
-TOOLCHAIN="+nightly-2025-08-19"
 BIN_NAME="openvm-coremark-benchmark"
 MAX_SEGMENT_LENGTH=$((1 << 22))
 segment_max_memory=$((15 << 30))
@@ -158,10 +159,10 @@ if [ "$USE_NSYS" = "false" ]; then
     export JEMALLOC_SYS_WITH_MALLOC_CONF="retain:true,background_thread:true,metadata_thp:always,dirty_decay_ms:10000,muzzy_decay_ms:10000,abort_conf:true"
 fi
 
-MANIFEST_PATH="$REPO_ROOT/host/Cargo.toml"
+MANIFEST_PATH="$HOST_DIR/Cargo.toml"
 
 if [[ "${OPENVM_BENCH_SKIP_BUILD:-0}" != "1" ]]; then
-    RUSTFLAGS=$RUSTFLAGS cargo $TOOLCHAIN build --manifest-path "$MANIFEST_PATH" --target-dir "$REPO_ROOT/target" --bin $BIN_NAME --profile=$PROFILE --no-default-features --features=$FEATURES
+    RUSTFLAGS=$RUSTFLAGS cargo build --manifest-path "$MANIFEST_PATH" --target-dir "$REPO_ROOT/target" --bin $BIN_NAME --profile=$PROFILE --no-default-features --features=$FEATURES
 fi
 
 BIN=$REPO_ROOT/target/$TARGET_DIR/$BIN_NAME
