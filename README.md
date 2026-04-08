@@ -187,3 +187,10 @@ needed for GPU acceleration or profiling/debugging work.
 
 - The zkVM framework uses [OpenVM](https://github.com/openvm-org/openvm)
 - The benchmark workload directly uses [CoreMark](https://github.com/eembc/coremark)
+
+## License
+
+The code in this repository is licensed under MIT; see [LICENSE](LICENSE).
+
+The bundled `coremark/` directory is third-party code from EEMBC's CoreMark project
+and remains subject to its upstream license terms; see [coremark/LICENSE.md](coremark/LICENSE.md).
