@@ -130,8 +130,8 @@ dependencies = [
 
 [[package]]
 name = "openvm"
-version = "2.0.0-beta.1"
-source = "git+https://github.com/openvm-org/openvm.git?tag=v2.0.0-beta.1#90648c5fd67fb59fe442e16424ab120fa2633f8b"
+version = "2.0.0-alpha"
+source = "git+https://github.com/openvm-org/openvm.git?branch=develop-v2.0.0-rc.1#8080f984ea520f526af6f5a10b7c864bf4bd08b9"
 dependencies = [
  "bytemuck",
  "getrandom 0.2.17",
@@ -146,7 +146,7 @@ dependencies = [
 [[package]]
 name = "openvm-custom-insn"
 version = "0.1.0"
-source = "git+https://github.com/openvm-org/openvm.git?tag=v2.0.0-beta.1#90648c5fd67fb59fe442e16424ab120fa2633f8b"
+source = "git+https://github.com/openvm-org/openvm.git?branch=develop-v2.0.0-rc.1#8080f984ea520f526af6f5a10b7c864bf4bd08b9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -155,8 +155,8 @@ dependencies = [
 
 [[package]]
 name = "openvm-platform"
-version = "2.0.0-beta.1"
-source = "git+https://github.com/openvm-org/openvm.git?tag=v2.0.0-beta.1#90648c5fd67fb59fe442e16424ab120fa2633f8b"
+version = "2.0.0-alpha"
+source = "git+https://github.com/openvm-org/openvm.git?branch=develop-v2.0.0-rc.1#8080f984ea520f526af6f5a10b7c864bf4bd08b9"
 dependencies = [
  "libm",
  "openvm-custom-insn",
@@ -165,8 +165,8 @@ dependencies = [
 
 [[package]]
 name = "openvm-rv32im-guest"
-version = "2.0.0-beta.1"
-source = "git+https://github.com/openvm-org/openvm.git?tag=v2.0.0-beta.1#90648c5fd67fb59fe442e16424ab120fa2633f8b"
+version = "2.0.0-alpha"
+source = "git+https://github.com/openvm-org/openvm.git?branch=develop-v2.0.0-rc.1#8080f984ea520f526af6f5a10b7c864bf4bd08b9"
 dependencies = [
  "openvm-custom-insn",
  "p3-field",

@@ -2,18 +2,21 @@
 
 The [CoreMark](coremark/README.md) benchmark as an OpenVM guest program.
 The repo root is the guest crate, and `host/` contains a separate host-side harness.
+The guest program can be executed and/or proven using either `cargo openvm` or the host-side harness.
 
 ## Getting Started
 
 ### Prerequisites
 
 #### Required:
+
 - `git`
 - `rustup` with the repo toolchain from `rust-toolchain.toml`
 - `cargo openvm` (install via the [official OpenVM docs](https://docs.openvm.dev/book/getting-started/introduction))
 - A RISC-V GCC toolchain in `PATH` for guest builds
 
 #### Optional:
+
 - NVIDIA tooling for CUDA/profiling flows: `nvidia-smi`, `compute-sanitizer`, and `nsys`
 
 If you want to use a specific RISC-V GCC for guest builds, set `OPENVM_GUEST_GCC`.
@@ -133,6 +136,8 @@ This repo’s `portme` has two notable features:
 - **Printing is implemented via OpenVM**: `ee_printf` is implemented in C, but it routes each emitted byte through a small Rust-exported symbol (`coremark_putchar`) which calls `openvm::io::print`. The formatter is intentionally minimal and only supports the subset CoreMark uses (e.g. `%s`, `%d/%i`, `%u`, `%x/%X`, `%c`, `%%`, simple width/zero-padding like `%04x`, and `%lu`).
 - **Timing is NOT implemented in-guest**: OpenVM guest programs don’t currently expose a meaningful wall-clock/cycle counter to the guest. We measure elapsed time using **host wall-clock** around `cargo openvm run`, and keep the CoreMark timing hooks as minimal stubs so the benchmark can run and print.
 
+> [!WARNING]
+>
 > Because the timing hooks are stubbed, CoreMark will typically print:
 > `ERROR! Must execute for at least 10 secs for a valid result!`
 >
