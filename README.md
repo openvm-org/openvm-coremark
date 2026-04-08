@@ -40,7 +40,7 @@ git submodule update --init --recursive
 
 ### Running/Proving Using `cargo openvm`
 
-To run the CoreMark guest program using OpenVM:
+To build and run the CoreMark guest program using OpenVM:
 
 ```bash
 cargo openvm run
@@ -61,7 +61,7 @@ cargo openvm keygen
 cargo openvm prove stark
 ```
 
-To use a fixed iteration count instead of the default build-time setting:
+To use a fixed iteration count instead of the default build-time setting (i.e. 10000):
 
 ```bash
 CFLAGS="-DITERATIONS=1000" cargo openvm run
@@ -74,7 +74,7 @@ For more information on `cargo openvm` usage, see the [official OpenVM docs](htt
 ### Running/Proving Using the Host Harness
 
 The host harness currently expects a guest ELF at `host/elf/coremark-openvm`.
-After building the guest with `cargo openvm build`, copy the resulting ELF there:
+Build the guest ELF with `cargo openvm build`, and then copy the resulting ELF there:
 
 ```bash
 mkdir -p host/elf

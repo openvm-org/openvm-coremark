@@ -1,6 +1,9 @@
 # Cargo build
 **/target
 
+# OpenVM build
+**/openvm
+
 # Generated local artifacts
 metrics.json
 gpu_memory_usage.csv
