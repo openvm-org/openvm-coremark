@@ -4,18 +4,17 @@ use std::time::Instant;
 
 use clap::Parser;
 use openvm_circuit::arch::instructions::exe::VmExe;
-use openvm_sdk::{config::{AggregationSystemParams, AppConfig}, Sdk};
+use openvm_sdk::{
+    Sdk,
+    config::{AggregationSystemParams, AppConfig},
+};
 use openvm_sdk_config::{SdkVmConfig, TranspilerConfig};
 use openvm_stark_sdk::{
-    bench::run_with_metric_collection,
-    config::app_params_with_100_bits_security,
+    bench::run_with_metric_collection, config::app_params_with_100_bits_security,
     openvm_stark_backend::codec::Encode,
 };
-use openvm_transpiler::{elf::Elf, openvm_platform::memory::MEM_SIZE, FromElf};
-use openvm_verify_stark_host::{
-    verify_vm_stark_proof_decoded,
-    vk::VmStarkVerifyingKey,
-};
+use openvm_transpiler::{FromElf, elf::Elf, openvm_platform::memory::MEM_SIZE};
+use openvm_verify_stark_host::{verify_vm_stark_proof_decoded, vk::VmStarkVerifyingKey};
 use tracing::info;
 
 const COREMARK_ELF: &[u8] = include_bytes!("../elf/coremark-openvm");
@@ -88,7 +87,10 @@ fn main() -> eyre::Result<()> {
         match args.mode {
             BenchMode::Execute => {
                 let public_values = sdk.execute(exe, stdin)?;
-                info!("Execute completed, public values len: {}", public_values.len());
+                info!(
+                    "Execute completed, public values len: {}",
+                    public_values.len()
+                );
             }
             BenchMode::ExecuteMetered => {
                 let (public_values, segments) = sdk.execute_metered(exe, stdin)?;
@@ -106,8 +108,10 @@ fn main() -> eyre::Result<()> {
             }
             BenchMode::ProveStark => {
                 let (proof, baseline) = sdk.prove(exe, stdin, &[])?;
-                let vk =
-                    VmStarkVerifyingKey { mvk: (*sdk.agg_vk()).clone(), baseline };
+                let vk = VmStarkVerifyingKey {
+                    mvk: (*sdk.agg_vk()).clone(),
+                    baseline,
+                };
                 let encoded = proof.encode_to_vec()?;
                 let compressed = zstd::encode_all(&encoded[..], 19)?;
                 info!(
