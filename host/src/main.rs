@@ -5,19 +5,19 @@ use std::time::Instant;
 use clap::Parser;
 use openvm_circuit::arch::instructions::exe::VmExe;
 use openvm_sdk::{
-    Sdk,
     config::{AggregationSystemParams, AppConfig},
+    Sdk,
 };
 use openvm_sdk_config::{SdkVmConfig, TranspilerConfig};
 use openvm_stark_sdk::{
     bench::run_with_metric_collection, config::app_params_with_100_bits_security,
     openvm_stark_backend::codec::Encode,
 };
-use openvm_transpiler::{FromElf, elf::Elf, openvm_platform::memory::MEM_SIZE};
+use openvm_transpiler::{elf::Elf, openvm_platform::memory::MEM_SIZE, FromElf};
 use openvm_verify_stark_host::{verify_vm_stark_proof_decoded, vk::VmStarkVerifyingKey};
 use tracing::info;
 
-const COREMARK_ELF: &[u8] = include_bytes!("../elf/coremark-openvm");
+const COREMARK_ELF: &[u8] = include_bytes!("../elf/openvm-coremark");
 
 const DEFAULT_LOG_STACKED_HEIGHT: usize = 24;
 const VM_MAX_CONSTRAINT_DEGREE: usize = 4;

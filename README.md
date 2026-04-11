@@ -1,4 +1,4 @@
-# coremark-openvm
+# openvm-coremark
 
 The [CoreMark](coremark/README.md) benchmark as an OpenVM guest program.
 The repo root is the guest crate, and `host/` contains a separate host-side harness.
@@ -53,7 +53,7 @@ export OPENVM_GUEST_GCC=riscv64-unknown-elf-gcc
 
 ```bash
 git clone --recurse-submodules <repo-url>
-cd coremark-openvm
+cd openvm-coremark
 ```
 
 If you already cloned without submodules:
@@ -97,12 +97,12 @@ For more information on `cargo openvm` usage, see the [official OpenVM docs](htt
 
 ### Running/Proving Using the Host Harness
 
-The host harness currently expects a guest ELF at `host/elf/coremark-openvm`.
+The host harness currently expects a guest ELF at `host/elf/openvm-coremark`.
 Build the guest ELF with `cargo openvm build`, and then copy the resulting ELF there:
 
 ```bash
 mkdir -p host/elf
-cp target/riscv32im-risc0-zkvm-elf/<profile>/coremark-openvm host/elf/coremark-openvm
+cp target/riscv32im-risc0-zkvm-elf/<profile>/openvm-coremark host/elf/openvm-coremark
 ```
 
 Then run the host wrapper:
@@ -130,7 +130,7 @@ on that `metrics.json` output for profiling and benchmark analysis.
 ## Repo structure
 
 ```text
-coremark-openvm/
+openvm-coremark/
 ├── Cargo.toml                 # Guest crate manifest
 ├── build.rs                   # Builds CoreMark C sources into the guest crate
 ├── openvm.toml                # Guest VM configuration
@@ -184,7 +184,7 @@ The standalone host-side benchmark/proving binary lives under `host/`, separate 
 ```
 
 The wrapper script builds the host binary from `host/`, runs it against the
-guest ELF staged at `host/elf/coremark-openvm`, and enables some host-specific
+guest ELF staged at `host/elf/openvm-coremark`, and enables some host-specific
 features automatically based on the machine it is running on.
 
 By default, it runs in `prove-stark` mode with the `release` Cargo profile.

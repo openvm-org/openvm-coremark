@@ -147,7 +147,7 @@ jobs:
             cargo openvm build
           fi
 
-          cp target/riscv32im-risc0-zkvm-elf/release/coremark-openvm host/elf/coremark-openvm
+          cp target/riscv32im-risc0-zkvm-elf/release/openvm-coremark host/elf/openvm-coremark
 
       - name: Run host harness benchmark
         run: |

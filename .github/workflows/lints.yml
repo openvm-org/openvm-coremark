@@ -90,7 +90,7 @@ jobs:
       - name: Stage guest ELF for host checks
         run: |
           mkdir -p host/elf
-          cp target/riscv32im-risc0-zkvm-elf/release/coremark-openvm host/elf/coremark-openvm
+          cp target/riscv32im-risc0-zkvm-elf/release/openvm-coremark host/elf/openvm-coremark
 
       - name: Host cargo fmt
         working-directory: host

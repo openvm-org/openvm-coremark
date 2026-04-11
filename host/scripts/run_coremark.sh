@@ -24,7 +24,7 @@ HOST_DIR=$(cd -- "$SCRIPT_DIR/.." && pwd)
 REPO_ROOT=$(cd -- "$HOST_DIR/.." && pwd)
 WORKDIR=$REPO_ROOT
 
-ELF="$HOST_DIR/elf/coremark-openvm"
+ELF="$HOST_DIR/elf/openvm-coremark"
 if [ ! -f "$ELF" ]; then
     echo "Error: coremark ELF not found at $ELF" >&2
     echo "Copy it manually: cp <path-to-coremark-elf> $ELF" >&2
