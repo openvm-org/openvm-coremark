@@ -1,0 +1,101 @@
+name: Lint Workspace
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["**"]
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow_ref }}-lints-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+
+jobs:
+  lint:
+    name: Lint
+    runs-on:
+      - runs-on=${{ github.run_id }}-cpu/runner=64cpu-linux-x64/extras=s3-cache
+    steps:
+      - uses: runs-on/action@v2
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        env:
+          RUSTUP_PERMIT_COPY_RENAME: "1"
+        with:
+          toolchain: nightly-2025-08-19
+          components: clippy,rustfmt
+
+      - name: Cache Rust artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Guest cargo fmt
+        run: cargo fmt --all --check
+
+      - name: Resolve RISC-V GCC
+        run: |
+          candidates=(
+            riscv32-unknown-elf-gcc
+            riscv64-unknown-elf-gcc
+            riscv32-linux-gnu-gcc
+            riscv64-linux-gnu-gcc
+            riscv-none-elf-gcc
+            riscv64-unknown-linux-gnu-gcc
+          )
+
+          for cc in "${candidates[@]}"; do
+            if command -v "$cc" >/dev/null 2>&1; then
+              echo "OPENVM_GUEST_GCC=$cc" >> "$GITHUB_ENV"
+              echo "Using $cc"
+              exit 0
+            fi
+          done
+
+          sudo apt-get update
+          sudo apt-get install -y gcc-riscv64-unknown-elf
+
+          if command -v riscv64-unknown-elf-gcc >/dev/null 2>&1; then
+            echo "OPENVM_GUEST_GCC=riscv64-unknown-elf-gcc" >> "$GITHUB_ENV"
+            echo "Installed and using riscv64-unknown-elf-gcc"
+            exit 0
+          fi
+
+          echo "No supported RISC-V GCC toolchain was found." >&2
+          exit 1
+
+      - name: Guest cargo clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Checkout openvm
+        run: git clone --depth=1 --branch="v2.0.0-beta.2" https://github.com/openvm-org/openvm.git
+
+      - name: Install cargo-openvm
+        working-directory: openvm/crates/cli
+        run: cargo install --force --locked --profile=release --path .
+
+      - name: Run guest with cargo openvm
+        run: cargo openvm run
+
+      - name: Stage guest ELF for host checks
+        run: |
+          mkdir -p host/elf
+          cp target/riscv32im-risc0-zkvm-elf/release/coremark-openvm host/elf/coremark-openvm
+
+      - name: Host cargo fmt
+        working-directory: host
+        run: cargo fmt --all --check
+
+      - name: Host cargo clippy
+        working-directory: host
+        run: cargo clippy --all-targets -- -D warnings

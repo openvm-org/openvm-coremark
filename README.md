@@ -25,6 +25,30 @@ Otherwise `build.rs` tries common toolchain names in `PATH`:
 `riscv32-linux-gnu-gcc`, `riscv64-linux-gnu-gcc`, `riscv-none-elf-gcc`, and
 `riscv64-unknown-linux-gnu-gcc`.
 
+#### Installing a RISC-V GCC toolchain
+
+On Ubuntu or Debian, the same package used by CI is:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y gcc-riscv64-unknown-elf
+```
+
+Then verify that one of the supported compiler names is available:
+
+```bash
+command -v riscv64-unknown-elf-gcc
+riscv64-unknown-elf-gcc --version
+```
+
+If your system installs a different supported binary name, that is also fine as
+long as it is on `PATH`. If you want to force a specific compiler, export it
+explicitly before building:
+
+```bash
+export OPENVM_GUEST_GCC=riscv64-unknown-elf-gcc
+```
+
 ### Clone The Repo
 
 ```bash

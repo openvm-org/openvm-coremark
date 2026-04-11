@@ -1,6 +1,9 @@
 name: Run Benchmark
 
 on:
+  push:
+    branches: ["main"]
+  pull_request:
   workflow_dispatch:
     inputs:
       instance_family:
@@ -32,6 +35,10 @@ on:
         required: false
         default: ""
 
+concurrency:
+  group: ${{ github.workflow_ref }}-run-benchmark-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -41,15 +48,19 @@ env:
 jobs:
   benchmark:
     name: Run Host Benchmark
+    env:
+      BENCH_HOST_PROFILE: ${{ inputs.host_profile || 'release' }}
+      BENCH_ITERATIONS: ${{ inputs.iterations || '' }}
+      BENCH_MODE: ${{ inputs.mode || 'prove-stark' }}
     runs-on:
       - runs-on
       - run-id=${{ github.run_id }}
-      - family=${{ inputs.instance_family || github.event.inputs.instance_family }}
+      - family=${{ inputs.instance_family || 'g6e.2xlarge' }}
       - disk=large
       - tag=bench-coremark-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - extras=s3-cache
       - spot=false
-      - image=${{ startsWith(github.event.inputs.instance_family || inputs.instance_family, 'g') && 'ubuntu24-gpu-x64' || contains(github.event.inputs.instance_family || inputs.instance_family, 'g.') && 'ubuntu24-full-arm64' || 'ubuntu24-full-x64' }}
+      - image=${{ startsWith(inputs.instance_family || 'g6e.2xlarge', 'g') && 'ubuntu24-gpu-x64' || contains(inputs.instance_family || 'g6e.2xlarge', 'g.') && 'ubuntu24-full-arm64' || 'ubuntu24-full-x64' }}
     timeout-minutes: 180
 
     steps:
@@ -79,7 +90,7 @@ jobs:
           sudo apt-get install -y gnuplot
 
       - name: Verify GPU setup
-        if: ${{ startsWith(inputs.instance_family || github.event.inputs.instance_family, 'g') }}
+        if: ${{ startsWith(inputs.instance_family || 'g6e.2xlarge', 'g') }}
         run: |
           nvidia-smi
           nvidia-smi -L
@@ -116,11 +127,11 @@ jobs:
           exit 1
 
       - name: Checkout openvm
-        run: git clone --depth=1 --branch="v2.0.0-beta.1" https://github.com/openvm-org/openvm.git
+        run: git clone --depth=1 --branch="v2.0.0-beta.2" https://github.com/openvm-org/openvm.git
 
       - name: Install cargo-openvm
         working-directory: openvm/crates/cli
-        run: cargo install --force --locked --path .
+        run: cargo install --force --locked --profile=release --path .
 
       - name: Install openvm-prof
         working-directory: openvm/crates/prof
@@ -130,8 +141,8 @@ jobs:
         run: |
           mkdir -p host/elf
 
-          if [[ -n "${{ inputs.iterations }}" ]]; then
-            CFLAGS="-DITERATIONS=${{ inputs.iterations }}" cargo openvm build
+          if [[ -n "$BENCH_ITERATIONS" ]]; then
+            CFLAGS="-DITERATIONS=$BENCH_ITERATIONS" cargo openvm build
           else
             cargo openvm build
           fi
@@ -141,8 +152,8 @@ jobs:
       - name: Run host harness benchmark
         run: |
           ./host/scripts/run_coremark.sh \
-            --mode "${{ inputs.mode }}" \
-            --profile "${{ inputs.host_profile }}"
+            --mode "$BENCH_MODE" \
+            --profile "$BENCH_HOST_PROFILE"
 
       - name: Generate openvm-prof outputs
         run: |
@@ -152,10 +163,10 @@ jobs:
         if: always()
         run: |
           echo "## Host Benchmark" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Mode: \`${{ inputs.mode }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Host profile: \`${{ inputs.host_profile }}\`" >> "$GITHUB_STEP_SUMMARY"
-          if [[ -n "${{ inputs.iterations }}" ]]; then
-            echo "- ITERATIONS override: \`${{ inputs.iterations }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Mode: \`$BENCH_MODE\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Host profile: \`$BENCH_HOST_PROFILE\`" >> "$GITHUB_STEP_SUMMARY"
+          if [[ -n "$BENCH_ITERATIONS" ]]; then
+            echo "- ITERATIONS override: \`$BENCH_ITERATIONS\`" >> "$GITHUB_STEP_SUMMARY"
           fi
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
@@ -171,7 +182,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: host-benchmark-${{ inputs.mode }}-${{ github.run_id }}
+          name: host-benchmark-${{ inputs.mode || 'prove-stark' }}-${{ github.run_id }}
           if-no-files-found: warn
           path: |
             metrics.json
