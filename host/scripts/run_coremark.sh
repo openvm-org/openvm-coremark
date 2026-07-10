@@ -126,7 +126,6 @@ esac
 
 FEATURES="parallel,metrics,jemalloc,unprotected"
 BIN_NAME="openvm-coremark-benchmark"
-MAX_SEGMENT_LENGTH=$((1 << 22))
 segment_max_memory=$((15 << 30))
 export VPMM_PAGE_SIZE=$((4 << 20))
 if [[ -z "${VPMM_PAGES:-}" ]] && [[ "$MODE" == "prove-stark" || "$MODE" == "prove-app" ]]; then
@@ -168,7 +167,6 @@ fi
 BIN=$REPO_ROOT/target/$TARGET_DIR/$BIN_NAME
 
 BIN_ARGS="--mode $MODE \
---max-segment-length $MAX_SEGMENT_LENGTH \
 --segment-max-memory $segment_max_memory"
 
 export RUST_LOG="info,p3_=warn"
