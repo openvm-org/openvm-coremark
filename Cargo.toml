@@ -6,7 +6,7 @@ build = "build.rs"
 license = "MIT"
 
 [dependencies]
-openvm = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0-beta.2", features = ["std"] }
+openvm = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0", features = ["std"] }
 
 [build-dependencies]
 cc = "1.2.54"
