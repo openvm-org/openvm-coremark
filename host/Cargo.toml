@@ -5,13 +5,13 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-openvm-stark-sdk = { git = "https://github.com/openvm-org/stark-backend.git", tag = "v2.0.0-beta.2", default-features = false }
-openvm-cuda-backend = { git = "https://github.com/openvm-org/stark-backend.git", tag = "v2.0.0-beta.2", default-features = false, optional = true }
-openvm-transpiler = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0-beta.2", default-features = false }
-openvm-circuit = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0-beta.2", default-features = false }
-openvm-verify-stark-host = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0-beta.2", default-features = false }
-openvm-sdk = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0-beta.2", default-features = false }
-openvm-sdk-config = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0-beta.2", default-features = false }
+openvm-stark-sdk = { git = "https://github.com/openvm-org/stark-backend.git", tag = "v2.0.0", default-features = false }
+openvm-cuda-backend = { git = "https://github.com/openvm-org/stark-backend.git", tag = "v2.0.0", default-features = false, optional = true }
+openvm-transpiler = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0", default-features = false }
+openvm-circuit = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0", default-features = false }
+openvm-verify-stark-host = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0", default-features = false }
+openvm-sdk = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0", default-features = false }
+openvm-sdk-config = { git = "https://github.com/openvm-org/openvm.git", tag = "v2.0.0", default-features = false }
 
 clap = { version = "4.5.7", features = ["derive"] }
 eyre = "0.6"

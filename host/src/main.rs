@@ -35,9 +35,6 @@ struct Args {
     #[clap(long, value_enum, default_value = "prove-stark")]
     mode: BenchMode,
 
-    #[arg(long, alias = "max_segment_length")]
-    max_segment_length: Option<u32>,
-
     #[arg(long)]
     segment_max_memory: Option<usize>,
 }
@@ -55,19 +52,8 @@ fn main() -> eyre::Result<()> {
         .with_max_constraint_degree(VM_MAX_CONSTRAINT_DEGREE)
         .with_public_values(32);
 
-    if let Some(max_trace_height) = args.max_segment_length {
-        vm_config
-            .as_mut()
-            .segmentation_config
-            .limits
-            .set_max_trace_height(max_trace_height);
-    }
     if let Some(max_memory) = args.segment_max_memory {
-        vm_config
-            .as_mut()
-            .segmentation_config
-            .limits
-            .set_max_memory(max_memory);
+        vm_config.as_mut().set_segmentation_max_memory(max_memory);
     }
 
     let transpiler = vm_config.transpiler().clone();
