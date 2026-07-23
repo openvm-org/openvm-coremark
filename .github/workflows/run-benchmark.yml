@@ -10,7 +10,7 @@ on:
         description: Instance family to use for the benchmark runner
         type: string
         required: false
-        default: g6e.2xlarge
+        default: g7.4xlarge
       mode:
         description: Host harness mode
         type: choice
@@ -55,12 +55,12 @@ jobs:
     runs-on:
       - runs-on
       - run-id=${{ github.run_id }}
-      - family=${{ inputs.instance_family || 'g6e.2xlarge' }}
+      - family=${{ inputs.instance_family || 'g7.4xlarge' }}
       - disk=large
       - tag=bench-coremark-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - extras=s3-cache
       - spot=false
-      - image=${{ startsWith(inputs.instance_family || 'g6e.2xlarge', 'g') && 'ubuntu24-gpu-x64' || contains(inputs.instance_family || 'g6e.2xlarge', 'g.') && 'ubuntu24-full-arm64' || 'ubuntu24-full-x64' }}
+      - image=${{ startsWith(inputs.instance_family || 'g7.4xlarge', 'g') && 'ubuntu24-gpu-x64' || contains(inputs.instance_family || 'g7.4xlarge', 'g.') && 'ubuntu24-full-arm64' || 'ubuntu24-full-x64' }}
     timeout-minutes: 180
 
     steps:
@@ -90,7 +90,7 @@ jobs:
           sudo apt-get install -y gnuplot
 
       - name: Verify GPU setup
-        if: ${{ startsWith(inputs.instance_family || 'g6e.2xlarge', 'g') }}
+        if: ${{ startsWith(inputs.instance_family || 'g7.4xlarge', 'g') }}
         run: |
           nvidia-smi
           nvidia-smi -L
