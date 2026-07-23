@@ -25,8 +25,9 @@ on:
         description: Cargo profile for the host harness
         type: choice
         required: false
-        default: release
+        default: maxperf
         options:
+          - maxperf
           - dev
           - release
       iterations:
@@ -49,7 +50,7 @@ jobs:
   benchmark:
     name: Run Host Benchmark
     env:
-      BENCH_HOST_PROFILE: ${{ inputs.host_profile || 'release' }}
+      BENCH_HOST_PROFILE: ${{ inputs.host_profile || 'maxperf' }}
       BENCH_ITERATIONS: ${{ inputs.iterations || '' }}
       BENCH_MODE: ${{ inputs.mode || 'prove-stark' }}
     runs-on:

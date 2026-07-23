@@ -187,7 +187,7 @@ The wrapper script builds the host binary from `host/`, runs it against the
 guest ELF staged at `host/elf/openvm-coremark`, and enables some host-specific
 features automatically based on the machine it is running on.
 
-By default, it runs in `prove-stark` mode with the `release` Cargo profile.
+By default, it runs in `prove-stark` mode with the `maxperf` Cargo profile.
 On `x86_64`, it also enables the host `aot` feature. If `nvidia-smi` is
 available, the script automatically enables CUDA and records GPU memory usage to
 `gpu_memory_usage.csv`. If no NVIDIA tooling is available, the host harness
@@ -196,7 +196,7 @@ still runs without those profiling features.
 ### `run_coremark.sh` options
 
 - `--mode <MODE>`: choose one of `execute`, `execute-metered`, `prove-app`, or `prove-stark`
-- `--profile <PROFILE>`: build the host binary with `dev`, `release`, or a custom Cargo profile such as `profiling`
+- `--profile <PROFILE>`: build the host binary with `dev`, `release`, `maxperf`, or `profiling`
 - `--cuda`: force CUDA acceleration instead of relying on auto-detection via `nvidia-smi`
 - `--nsys`: run under NVIDIA Nsight Systems profiling; this implies CUDA and uses `sudo nsys profile`
 - `--memcheck`: run under `compute-sanitizer --tool memcheck`

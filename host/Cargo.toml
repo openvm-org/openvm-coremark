@@ -31,3 +31,16 @@ jemalloc = ["openvm-sdk/jemalloc"]
 cuda = ["dep:openvm-cuda-backend", "openvm-sdk/cuda"]
 unprotected = ["openvm-sdk/unprotected"]
 nvtx = ["openvm-stark-sdk/nvtx"]
+
+[profile.release]
+lto = "thin"
+
+[profile.profiling]
+inherits = "maxperf"
+debug = "full"
+strip = "none"
+
+[profile.maxperf]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
