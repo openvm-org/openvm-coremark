@@ -45,6 +45,7 @@ permissions:
 
 env:
   CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+  RVR_CC: clang-22
 
 jobs:
   benchmark:
@@ -88,7 +89,10 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang gnuplot lld
+          sudo apt-get install -y gnuplot lld lsb-release wget software-properties-common gnupg
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 22
 
       # TODO: remove once https://github.com/runs-on/runner-images-for-aws/issues/55 is fixed
       - name: Setup GPU driver

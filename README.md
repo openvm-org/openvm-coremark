@@ -22,7 +22,8 @@ version of `cargo openvm`.
 #### Optional:
 
 - NVIDIA tooling for CUDA/profiling flows: `nvidia-smi`, `compute-sanitizer`, and `nsys`
-- LLVM Clang and `lld` for accelerated RVR execution in the x86_64 host harness
+- LLVM Clang 19 or newer (Clang 22 recommended) and `lld` for accelerated RVR execution
+  in the x86_64 host harness; set `RVR_CC` if the compiler is not available as `clang-22`
 
 If you want to use a specific RISC-V GCC for guest builds, set `OPENVM_GUEST_GCC`.
 Otherwise `build.rs` tries common toolchain names in `PATH`:
