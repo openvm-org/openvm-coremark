@@ -72,14 +72,14 @@ fn main() -> eyre::Result<()> {
         let start = Instant::now();
         match args.mode {
             BenchMode::Execute => {
-                let public_values = sdk.execute(exe, stdin)?;
+                let public_values = sdk.compile_and_execute(exe, stdin)?;
                 info!(
                     "Execute completed, public values len: {}",
                     public_values.len()
                 );
             }
             BenchMode::ExecuteMetered => {
-                let (public_values, segments) = sdk.execute_metered(exe, stdin)?;
+                let (public_values, segments) = sdk.compile_and_execute_metered(exe, stdin)?;
                 info!(
                     "Execute metered completed, public values len: {}",
                     public_values.len()

@@ -108,7 +108,7 @@ dependencies = [
 [[package]]
 name = "openvm"
 version = "2.0.0"
-source = "git+https://github.com/openvm-org/openvm.git?tag=v2.0.0#15a7ab6baed03d75050dbef2bbad4b4e98fb8dba"
+source = "git+https://github.com/openvm-org/openvm.git?branch=develop-v2.1.0#0b32f5dc61b7e85c9bf72b30ae9a531b79deb465"
 dependencies = [
  "bytemuck",
  "getrandom 0.2.17",
@@ -116,7 +116,7 @@ dependencies = [
  "num-bigint",
  "openvm-custom-insn",
  "openvm-platform",
- "openvm-rv32im-guest",
+ "openvm-riscv-guest",
  "serde",
 ]
 
@@ -131,7 +131,7 @@ dependencies = [
 [[package]]
 name = "openvm-custom-insn"
 version = "0.1.0"
-source = "git+https://github.com/openvm-org/openvm.git?tag=v2.0.0#15a7ab6baed03d75050dbef2bbad4b4e98fb8dba"
+source = "git+https://github.com/openvm-org/openvm.git?branch=develop-v2.1.0#0b32f5dc61b7e85c9bf72b30ae9a531b79deb465"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -141,17 +141,17 @@ dependencies = [
 [[package]]
 name = "openvm-platform"
 version = "2.0.0"
-source = "git+https://github.com/openvm-org/openvm.git?tag=v2.0.0#15a7ab6baed03d75050dbef2bbad4b4e98fb8dba"
+source = "git+https://github.com/openvm-org/openvm.git?branch=develop-v2.1.0#0b32f5dc61b7e85c9bf72b30ae9a531b79deb465"
 dependencies = [
  "libm",
  "openvm-custom-insn",
- "openvm-rv32im-guest",
+ "openvm-riscv-guest",
 ]
 
 [[package]]
-name = "openvm-rv32im-guest"
+name = "openvm-riscv-guest"
 version = "2.0.0"
-source = "git+https://github.com/openvm-org/openvm.git?tag=v2.0.0#15a7ab6baed03d75050dbef2bbad4b4e98fb8dba"
+source = "git+https://github.com/openvm-org/openvm.git?branch=develop-v2.1.0#0b32f5dc61b7e85c9bf72b30ae9a531b79deb465"
 dependencies = [
  "openvm-custom-insn",
  "strum_macros",

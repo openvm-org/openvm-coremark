@@ -46,9 +46,7 @@ jobs:
       - name: Resolve RISC-V GCC
         run: |
           candidates=(
-            riscv32-unknown-elf-gcc
             riscv64-unknown-elf-gcc
-            riscv32-linux-gnu-gcc
             riscv64-linux-gnu-gcc
             riscv-none-elf-gcc
             riscv64-unknown-linux-gnu-gcc
@@ -78,11 +76,14 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Checkout openvm
-        run: git clone --depth=1 --branch="v2.0.0" https://github.com/openvm-org/openvm.git
+        run: git clone --depth=1 --branch="develop-v2.1.0" https://github.com/openvm-org/openvm.git
 
       - name: Install cargo-openvm
         working-directory: openvm/crates/cli
         run: cargo install --force --locked --profile=release --path .
+
+      - name: Install OpenVM guest toolchain
+        run: cargo openvm toolchain install
 
       - name: Run guest with cargo openvm
         run: cargo openvm run
@@ -90,7 +91,7 @@ jobs:
       - name: Stage guest ELF for host checks
         run: |
           mkdir -p host/elf
-          cp target/riscv32im-risc0-zkvm-elf/release/openvm-coremark host/elf/openvm-coremark
+          cp target/riscv64im-unknown-openvm-elf/release/openvm-coremark host/elf/openvm-coremark
 
       - name: Host cargo fmt
         working-directory: host

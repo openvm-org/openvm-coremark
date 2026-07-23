@@ -45,6 +45,7 @@ permissions:
 
 env:
   CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+  RVR_CC: clang-22
 
 jobs:
   benchmark:
@@ -88,7 +89,10 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gnuplot
+          sudo apt-get install -y gnuplot lld lsb-release wget software-properties-common gnupg
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 22
 
       # TODO: remove once https://github.com/runs-on/runner-images-for-aws/issues/55 is fixed
       - name: Setup GPU driver
@@ -104,9 +108,7 @@ jobs:
       - name: Resolve RISC-V GCC
         run: |
           candidates=(
-            riscv32-unknown-elf-gcc
             riscv64-unknown-elf-gcc
-            riscv32-linux-gnu-gcc
             riscv64-linux-gnu-gcc
             riscv-none-elf-gcc
             riscv64-unknown-linux-gnu-gcc
@@ -133,11 +135,14 @@ jobs:
           exit 1
 
       - name: Checkout openvm
-        run: git clone --depth=1 --branch="v2.0.0" https://github.com/openvm-org/openvm.git
+        run: git clone --depth=1 --branch="develop-v2.1.0" https://github.com/openvm-org/openvm.git
 
       - name: Install cargo-openvm
         working-directory: openvm/crates/cli
         run: cargo install --force --locked --profile=release --path .
+
+      - name: Install OpenVM guest toolchain
+        run: cargo openvm toolchain install
 
       - name: Install openvm-prof
         working-directory: openvm/crates/prof
@@ -153,7 +158,7 @@ jobs:
             cargo openvm build
           fi
 
-          cp target/riscv32im-risc0-zkvm-elf/release/openvm-coremark host/elf/openvm-coremark
+          cp target/riscv64im-unknown-openvm-elf/release/openvm-coremark host/elf/openvm-coremark
 
       - name: Run host harness benchmark
         run: |
