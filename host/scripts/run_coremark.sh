@@ -5,8 +5,8 @@
 # Options:
 #   --mode <MODE>       Set the mode (default: prove-stark)
 #                       Valid modes: execute, execute-metered, prove-app, prove-stark
-#   --profile <PROFILE> Set the Cargo build profile (default: release)
-#                       Valid profiles: dev, release, profiling
+#   --profile <PROFILE> Set the Cargo build profile (default: maxperf)
+#                       Valid profiles: dev, release, maxperf, profiling
 #   --cuda              Force CUDA acceleration (auto-detected if nvidia-smi available)
 #   --nsys              Run with nsys profiling and output summary stats
 #   --<tool>            Run with compute-sanitizer --tool <tool> (memcheck, synccheck, racecheck)
@@ -109,7 +109,7 @@ fi
 MODE="${MODE_OVERRIDE:-prove-stark}"
 
 # Map profile aliases and set target directory
-case "${PROFILE_OVERRIDE:-release}" in
+case "${PROFILE_OVERRIDE:-maxperf}" in
     dev|debug)
         PROFILE="dev"
         TARGET_DIR="debug"
@@ -140,12 +140,15 @@ if [ "$USE_NSYS" = "true" ]; then
 fi
 
 arch=$(uname -m)
+TARGET_CPU=$(rustc --print target-cpus | sed -n 's/^ *native.*(currently \([^)]*\)).*/\1/p')
+TARGET_CPU="${TARGET_CPU:-native}"
+echo "Resolved target CPU: $TARGET_CPU"
+RUSTFLAGS="-Ctarget-cpu=$TARGET_CPU"
+
 case $arch in
 arm64|aarch64)
-    RUSTFLAGS="-Ctarget-cpu=native"
     ;;
 x86_64|amd64)
-    RUSTFLAGS="-Ctarget-cpu=native"
     FEATURES="$FEATURES,aot"
     ;;
 *)

@@ -10,7 +10,7 @@ on:
         description: Instance family to use for the benchmark runner
         type: string
         required: false
-        default: g6e.2xlarge
+        default: g7e.2xlarge
       mode:
         description: Host harness mode
         type: choice
@@ -25,8 +25,9 @@ on:
         description: Cargo profile for the host harness
         type: choice
         required: false
-        default: release
+        default: maxperf
         options:
+          - maxperf
           - dev
           - release
       iterations:
@@ -49,18 +50,18 @@ jobs:
   benchmark:
     name: Run Host Benchmark
     env:
-      BENCH_HOST_PROFILE: ${{ inputs.host_profile || 'release' }}
+      BENCH_HOST_PROFILE: ${{ inputs.host_profile || 'maxperf' }}
       BENCH_ITERATIONS: ${{ inputs.iterations || '' }}
       BENCH_MODE: ${{ inputs.mode || 'prove-stark' }}
     runs-on:
       - runs-on
       - run-id=${{ github.run_id }}
-      - family=${{ inputs.instance_family || 'g6e.2xlarge' }}
+      - family=${{ inputs.instance_family || 'g7e.2xlarge' }}
       - disk=large
       - tag=bench-coremark-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
       - extras=s3-cache
       - spot=false
-      - image=${{ startsWith(inputs.instance_family || 'g6e.2xlarge', 'g') && 'ubuntu24-gpu-x64' || contains(inputs.instance_family || 'g6e.2xlarge', 'g.') && 'ubuntu24-full-arm64' || 'ubuntu24-full-x64' }}
+      - image=${{ startsWith(inputs.instance_family || 'g7e.2xlarge', 'g') && 'ubuntu24-gpu-x64' || contains(inputs.instance_family || 'g7e.2xlarge', 'g.') && 'ubuntu24-full-arm64' || 'ubuntu24-full-x64' }}
     timeout-minutes: 180
 
     steps:
@@ -89,8 +90,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gnuplot
 
+      # TODO: remove once https://github.com/runs-on/runner-images-for-aws/issues/55 is fixed
+      - name: Setup GPU driver
+        if: ${{ startsWith(inputs.instance_family || 'g7e.2xlarge', 'g') }}
+        run: bash ./host/scripts/gpu_driver_setup.sh
+
       - name: Verify GPU setup
-        if: ${{ startsWith(inputs.instance_family || 'g6e.2xlarge', 'g') }}
+        if: ${{ startsWith(inputs.instance_family || 'g7e.2xlarge', 'g') }}
         run: |
           nvidia-smi
           nvidia-smi -L
