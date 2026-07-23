@@ -89,6 +89,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gnuplot
 
+      # TODO: remove once https://github.com/runs-on/runner-images-for-aws/issues/55 is fixed
+      - name: Setup GPU driver
+        if: ${{ startsWith(inputs.instance_family || 'g7.4xlarge', 'g') }}
+        run: bash ./host/scripts/gpu_driver_setup.sh
+
       - name: Verify GPU setup
         if: ${{ startsWith(inputs.instance_family || 'g7.4xlarge', 'g') }}
         run: |
