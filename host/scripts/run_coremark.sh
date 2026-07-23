@@ -149,7 +149,7 @@ case $arch in
 arm64|aarch64)
     ;;
 x86_64|amd64)
-    FEATURES="$FEATURES,aot"
+    FEATURES="$FEATURES,rvr"
     ;;
 *)
     echo "Unsupported architecture: $arch"

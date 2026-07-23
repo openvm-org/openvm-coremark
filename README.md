@@ -13,17 +13,22 @@ The guest program can be executed and/or proven using either `cargo openvm` or t
 - `git`
 - `rustup` with the repo toolchain from `rust-toolchain.toml`
 - `cargo openvm` (install via the [official OpenVM docs](https://docs.openvm.dev/book/getting-started/introduction))
+- The matching OpenVM guest toolchain (installed with `cargo openvm toolchain install`)
 - A RISC-V GCC toolchain in `PATH` for guest builds
+
+This repository tracks OpenVM's `develop-v2.1.0` branch, so use a compatible
+version of `cargo openvm`.
 
 #### Optional:
 
 - NVIDIA tooling for CUDA/profiling flows: `nvidia-smi`, `compute-sanitizer`, and `nsys`
+- LLVM Clang and `lld` for accelerated RVR execution in the x86_64 host harness
 
 If you want to use a specific RISC-V GCC for guest builds, set `OPENVM_GUEST_GCC`.
 Otherwise `build.rs` tries common toolchain names in `PATH`:
-`riscv32-unknown-elf-gcc`, `riscv64-unknown-elf-gcc`,
-`riscv32-linux-gnu-gcc`, `riscv64-linux-gnu-gcc`, `riscv-none-elf-gcc`, and
-`riscv64-unknown-linux-gnu-gcc`.
+`riscv64-unknown-elf-gcc`, `riscv64-linux-gnu-gcc`, `riscv-none-elf-gcc`,
+and `riscv64-unknown-linux-gnu-gcc`. The matching archiver is selected
+automatically; it can be overridden with `OPENVM_GUEST_AR`.
 
 #### Installing a RISC-V GCC toolchain
 
@@ -47,6 +52,12 @@ explicitly before building:
 
 ```bash
 export OPENVM_GUEST_GCC=riscv64-unknown-elf-gcc
+```
+
+Install the matching RV64 guest toolchain:
+
+```bash
+cargo openvm toolchain install
 ```
 
 ### Clone The Repo
@@ -102,7 +113,7 @@ Build the guest ELF with `cargo openvm build`, and then copy the resulting ELF t
 
 ```bash
 mkdir -p host/elf
-cp target/riscv32im-risc0-zkvm-elf/<profile>/openvm-coremark host/elf/openvm-coremark
+cp target/riscv64im-unknown-openvm-elf/<profile>/openvm-coremark host/elf/openvm-coremark
 ```
 
 Then run the host wrapper:
@@ -188,7 +199,7 @@ guest ELF staged at `host/elf/openvm-coremark`, and enables some host-specific
 features automatically based on the machine it is running on.
 
 By default, it runs in `prove-stark` mode with the `maxperf` Cargo profile.
-On `x86_64`, it also enables the host `aot` feature. If `nvidia-smi` is
+On `x86_64`, it also enables the host `rvr` execution feature. If `nvidia-smi` is
 available, the script automatically enables CUDA and records GPU memory usage to
 `gpu_memory_usage.csv`. If no NVIDIA tooling is available, the host harness
 still runs without those profiling features.
